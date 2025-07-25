@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: bible_api
+      MYSQL_USER: bibleuser
+      MYSQL_PASSWORD: biblepass
+    volumes:
+      - bible_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+
+  api:
+    build: .
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: mysql2://bibleuser:biblepass@db/bible_api
+      REDIS_URL: redis://redis:6379
+      RACK_ENV: production
+    ports:
+      - "4567:4567"
+    command: bundle exec ruby app.rb -o 0.0.0.0 -p 4567
+
+  client:
+    build:
+      context: ./client
+    depends_on:
+      - api
+    entrypoint: ["python", "client.py"]
+
+volumes:
+  bible_db_data:
+  redis_data:

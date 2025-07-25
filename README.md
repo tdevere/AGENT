@@ -49,3 +49,30 @@ flake8 src/
 3. Make your changes
 4. Run tests
 5. Submit a pull request
+
+## Docker Usage
+
+Build and start the server using Docker Compose:
+
+```bash
+docker compose up -d --build
+# import bible texts
+docker compose exec api bundle exec ruby import.rb
+```
+
+Verify the API:
+
+```bash
+curl http://localhost:4567/John+3:16
+```
+
+### Command Line Client
+
+The Python client provides access to all API endpoints:
+
+```bash
+# List translations
+python client/client.py translations --server http://localhost:4567
+```
+
+Use `--help` for complete command options.
